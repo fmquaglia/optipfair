@@ -180,7 +180,7 @@ If you use OptiPFair in your research, please cite:
   author = {Pere Martra},
   title = {OptiPFair: A Library for Structured Pruning of Large Language Models},
   year = {2025},
-  url = {https://github.com/yourusername/optipfair}
+  url = {https://github.com/peremartra/optipfair}
 }
 ```
 
