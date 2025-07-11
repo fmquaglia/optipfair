@@ -79,6 +79,37 @@ A quick compatibility checker that determines if your model can be pruned with O
 - Understanding model architecture
 - Troubleshooting compatibility issues
 
+#### `bias_compatibility_check.ipynb`
+A comprehensive checker that determines if your model is compatible with OptiPFair's bias visualization capabilities.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/bias_compatibility_check.ipynb)
+
+**Features:**
+- **30-second bias analysis:** Quick compatibility assessment for bias visualization
+- **Activation capture testing:** Verifies hook registration and layer access
+- **Visualization support detection:** Identifies available visualization types
+- **Detailed component analysis:** Checks attention, MLP, and GLU components
+- **Dependency verification:** Ensures all required packages are available
+
+**What it checks:**
+- Hook registration capability for activation capture
+- Layer structure compatibility (attention, MLP, GLU components)
+- Tokenizer functionality for bias analysis prompts
+- Visualization dependencies (matplotlib, seaborn, sklearn)
+- Support for mean difference plots, heatmaps, and PCA analysis
+
+**Supported visualizations:**
+- Mean difference plots for attention_output, mlp_output, gate_proj, up_proj
+- Heatmap visualizations for layer-wise activation patterns
+- PCA analysis for dimensional reduction and bias detection
+- Quantitative bias metrics with statistical significance
+
+**Perfect for:**
+- Verifying models before bias analysis
+- Understanding available visualization types
+- Troubleshooting bias analysis setup
+- Planning bias evaluation strategies
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -93,9 +124,10 @@ pip install optipfair[viz]
 
 ### Recommended Order
 
-1. **Start with compatibility checking:** Run `pruning_compatibility_check.ipynb` to verify your model is supported
-2. **Learn the basics:** Work through `basic_pruning_mlp.ipynb` to understand pruning concepts
-3. **Try the Python script:** Use `prune_llama.py` for production-ready pruning workflows
+1. **Start with compatibility checking:** Run `pruning_compatibility_check.ipynb` to verify your model is supported for pruning
+2. **Check bias analysis capabilities:** Use `bias_compatibility_check.ipynb` to verify bias visualization support
+3. **Learn the basics:** Work through `basic_pruning_mlp.ipynb` to understand pruning concepts
+4. **Try the Python script:** Use `prune_llama.py` for production-ready pruning workflows
 
 ## 🎯 Key Concepts Demonstrated
 
@@ -112,6 +144,13 @@ pip install optipfair[viz]
 - **GLU Architecture:** Required for structured pruning
 - **Supported Models:** LLaMA, Mistral, Gemma, Qwen, Phi families
 - **Architecture Analysis:** Automatic detection and validation
+
+### Bias Analysis Methods
+- **Activation Capture:** Hook-based layer activation recording
+- **Mean Difference Plots:** Comparing activations between demographic groups
+- **Heatmap Visualizations:** Layer-wise activation pattern analysis
+- **PCA Analysis:** Dimensional reduction for bias detection
+- **Quantitative Metrics:** Statistical significance testing
 
 ## 📊 Expected Results
 
@@ -148,16 +187,19 @@ torch_dtype = torch.float16 if "cuda" in device else torch.float32
 ## 🎓 Learning Path
 
 ### Beginners
-1. Run compatibility check on your model
+1. Run compatibility checks on your model (both pruning and bias analysis)
 2. Follow the basic pruning notebook step-by-step
 3. Experiment with different pruning percentages
-4. Try the Python script for automation
+4. Try bias visualization with default prompt pairs
+5. Use the Python script for automation
 
 ### Advanced Users
 1. Customize pruning parameters for your use case
-2. Integrate pruning into your model training pipeline
-3. Benchmark different neuron selection methods
-4. Contribute new examples or improvements
+2. Create custom prompt pairs for bias analysis
+3. Integrate pruning and bias analysis into your model evaluation pipeline
+4. Benchmark different neuron selection methods
+5. Analyze bias patterns across different model layers
+6. Contribute new examples or improvements
 
 ## 📚 Additional Resources
 
