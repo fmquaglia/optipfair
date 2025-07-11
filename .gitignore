@@ -58,6 +58,7 @@ site/
 
 # Local files
 howto.txt
+CLAUDE.md
 
 # Visualization test output
 visualization_test_output/
