@@ -11,6 +11,9 @@ This document outlines the planned features and improvements for OptiPFair.
   - PCA analysis for dimensional reduction
   - Quantitative bias metrics
 
+## Version 0.1.4
+- Depth pruning (Remove entire layer blocks) implementation. 
+
 ### Version 0.2.0
 - **Attention Mechanism Pruning**: Implement pruning techniques for attention layers
 - **Transformer Block Pruning**: Implement pruning techniques for entire transformer 
