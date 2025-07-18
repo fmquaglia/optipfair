@@ -153,19 +153,19 @@ The metrics returned by `visualize_bias` include:
 
 ### Mean Differences
 
-![Mean Differences Example](images/mean_diff_example.png)
+![Mean Differences Example](images/mean_image_differences.png)
 
 This visualization shows how the magnitude of activation differences varies across layers. Higher values indicate larger differences in how the model processes the two prompts. Increasing values in deeper layers often indicate bias amplification through the network.
 
 ### Heatmaps
 
-![Heatmap Example](images/heatmap_example.png)
+![Heatmap Example](images/activation_differences_layer.png)
 
 Heatmaps show detailed patterns of activation differences within specific layers. Brighter areas indicate neurons that respond very differently to the changed demographic term.
 
 ### PCA Analysis
 
-![PCA Example](images/pca_example.png)
+![PCA Example](images/pca_analysis.png)
 
 The PCA visualization reduces high-dimensional activations to 2D, showing how token representations shift when changing a demographic term. Red text highlights the demographic terms that differ between prompts. Arrows connect corresponding tokens across the two prompts.
 
