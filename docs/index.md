@@ -4,7 +4,7 @@ Welcome to the OptiPFair documentation. OptiPFair is a Python library for struct
 
 ## Why Prune Language Models?
 
-Pruning helps to reduce the size and computational requirements of large language models, making them:
+Pruning helps to reduce the size and computational requirements of LLMs, making them:
 
 - **Faster** for inference
 - **More efficient** in terms of memory usage
