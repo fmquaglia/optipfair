@@ -140,6 +140,109 @@ pruned_model = prune_model(
 
 This approach is often more intuitive when comparing across different model scales.
 
+## Depth Pruning
+
+OptiPFair also supports depth pruning, which removes entire transformer layers from models. This is more aggressive than neuron-level pruning but can lead to significant efficiency gains.
+
+### Python API
+
+#### Basic Depth Pruning
+
+```python
+from optipfair import prune_model
+
+# Remove 2 layers from the end of the model
+pruned_model = prune_model(
+    model=model,
+    pruning_type="DEPTH",
+    num_layers_to_remove=2
+)
+```
+
+#### Depth Pruning by Percentage
+
+```python
+# Remove 25% of layers
+pruned_model = prune_model(
+    model=model,
+    pruning_type="DEPTH",
+    depth_pruning_percentage=25.0
+)
+```
+
+#### Depth Pruning with Specific Layer Indices
+
+```python
+# Remove specific layers (e.g., layers 2, 5, and 8)
+pruned_model = prune_model(
+    model=model,
+    pruning_type="DEPTH",
+    layer_indices=[2, 5, 8]
+)
+```
+
+### Command-Line Interface
+
+#### Basic Depth Pruning
+
+```bash
+# Remove 2 layers from the end of the model
+optipfair prune \
+  --model-path meta-llama/Llama-3.2-1B \
+  --pruning-type DEPTH \
+  --num-layers-to-remove 2 \
+  --output-path ./depth-pruned-model
+```
+
+#### Depth Pruning by Percentage
+
+```bash
+# Remove 25% of layers
+optipfair prune \
+  --model-path meta-llama/Llama-3.2-1B \
+  --pruning-type DEPTH \
+  --pruning-percentage 25 \
+  --output-path ./depth-pruned-model
+```
+
+#### Depth Pruning with Specific Layers
+
+```bash
+# Remove specific layers
+optipfair prune \
+  --model-path meta-llama/Llama-3.2-1B \
+  --pruning-type DEPTH \
+  --layer-indices "2,5,8" \
+  --output-path ./depth-pruned-model
+```
+
+## Comparing Pruning Types
+
+### MLP GLU vs Depth Pruning
+
+| Feature | MLP GLU Pruning | Depth Pruning |
+|---------|-----------------|---------------|
+| **Granularity** | Neuron-level | Layer-level |
+| **Aggressiveness** | Moderate | High |
+| **Parameter Reduction** | Gradual | Significant |
+| **Model Structure** | Preserved | Layers removed |
+| **Fine-tuning Need** | Minimal | Recommended |
+| **Efficiency Gains** | Moderate | High |
+
+### When to Use Each Method
+
+**Use MLP GLU Pruning when:**
+- You want gradual parameter reduction
+- You need to preserve model structure
+- You have limited time for fine-tuning
+- You need precise control over expansion rates
+
+**Use Depth Pruning when:**
+- You need significant efficiency gains
+- You can afford to fine-tune the model
+- You have very large models with many layers
+- You need maximum inference speed improvement
+
 ## Evaluating Pruned Models
 
 After pruning, you can use OptiPFair's evaluation tools to assess the performance of the pruned model:

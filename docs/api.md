@@ -13,18 +13,27 @@ def prune_model(
     expansion_rate: Optional[float] = None,
     show_progress: bool = True,
     return_stats: bool = False,
+    # Depth pruning parameters
+    num_layers_to_remove: Optional[int] = None,
+    layer_indices: Optional[List[int]] = None,
+    depth_pruning_percentage: Optional[float] = None,
+    layer_selection_method: str = "last",
 ) -> Union[PreTrainedModel, Tuple[PreTrainedModel, Dict[str, Any]]]:
     """
     Prune a pre-trained language model using the specified pruning method.
     
     Args:
         model: Pre-trained model to prune
-        pruning_type: Type of pruning to apply (currently only "MLP_GLU" is supported)
-        neuron_selection_method: Method to calculate neuron importance ("MAW", "VOW", or "PON")
-        pruning_percentage: Percentage of neurons to prune (0-100)
-        expansion_rate: Target expansion rate in percentage (mutually exclusive with pruning_percentage)
+        pruning_type: Type of pruning to apply ("MLP_GLU" or "DEPTH")
+        neuron_selection_method: Method to calculate neuron importance ("MAW", "VOW", or "PON") - for MLP_GLU only
+        pruning_percentage: Percentage of neurons to prune (0-100) - for MLP_GLU only
+        expansion_rate: Target expansion rate in percentage (mutually exclusive with pruning_percentage) - for MLP_GLU only
         show_progress: Whether to show progress during pruning
         return_stats: Whether to return pruning statistics along with the model
+        num_layers_to_remove: Number of layers to remove - for DEPTH only
+        layer_indices: Specific layer indices to remove - for DEPTH only
+        depth_pruning_percentage: Percentage of layers to remove - for DEPTH only
+        layer_selection_method: Method for selecting layers ("last", "custom") - for DEPTH only
         
     Returns:
         Pruned model or tuple of (pruned_model, statistics) if return_stats is True
@@ -292,6 +301,124 @@ def compute_neuron_pair_importance_pon(gate_weight: torch.Tensor, up_weight: tor
     """
 ```
 
+### Depth Pruning
+
+#### `prune_model_depth`
+
+```python
+def prune_model_depth(
+    model: PreTrainedModel,
+    num_layers_to_remove: Optional[int] = None,
+    layer_indices: Optional[List[int]] = None,
+    depth_pruning_percentage: Optional[float] = None,
+    layer_selection_method: str = "last",
+    show_progress: bool = True,
+) -> PreTrainedModel:
+    """
+    Prune complete transformer layers from a model.
+    
+    This function removes entire transformer layers, which is more aggressive
+    than neuron-level pruning but can lead to significant efficiency gains.
+    
+    Args:
+        model: Pre-trained model to prune
+        num_layers_to_remove: Number of layers to remove
+        layer_indices: Specific layer indices to remove (mutually exclusive with other options)
+        depth_pruning_percentage: Percentage of layers to remove (mutually exclusive with other options)
+        layer_selection_method: Method for selecting layers ("last", "custom")
+        show_progress: Whether to show progress during pruning
+        
+    Returns:
+        Model with layers removed
+        
+    Raises:
+        ValueError: If parameters are invalid or model is incompatible
+    """
+```
+
+#### `validate_layer_removal_params`
+
+```python
+def validate_layer_removal_params(
+    model: PreTrainedModel,
+    num_layers_to_remove: Optional[int] = None,
+    layer_indices: Optional[List[int]] = None,
+    depth_pruning_percentage: Optional[float] = None,
+    layer_selection_method: str = "last"
+) -> Dict[str, Any]:
+    """
+    Validate parameters for layer removal and return validated configuration.
+    
+    This function ensures that the layer removal parameters are valid and
+    mutually exclusive where appropriate.
+    
+    Args:
+        model: Pre-trained model to validate
+        num_layers_to_remove: Number of layers to remove
+        layer_indices: Specific layer indices to remove
+        depth_pruning_percentage: Percentage of layers to remove
+        layer_selection_method: Method for selecting layers ("last", "custom")
+        
+    Returns:
+        Dictionary with validated parameters and model info
+        
+    Raises:
+        ValueError: If parameters are invalid or mutually exclusive
+    """
+```
+
+#### `select_layers_to_remove`
+
+```python
+def select_layers_to_remove(
+    total_layers: int,
+    num_layers_to_remove: int,
+    layer_selection_method: str,
+    custom_indices: Optional[List[int]] = None
+) -> List[int]:
+    """
+    Select which layer indices to remove based on the specified method.
+    
+    This function implements different strategies for selecting layers.
+    
+    Args:
+        total_layers: Total number of layers in the model
+        num_layers_to_remove: Number of layers to remove
+        layer_selection_method: Method for selection ("last", "custom")
+        custom_indices: Specific indices when method is "custom"
+        
+    Returns:
+        List of layer indices to remove (sorted)
+        
+    Raises:
+        ValueError: If method is invalid or parameters don't match
+    """
+```
+
+#### `remove_layers_from_model`
+
+```python
+def remove_layers_from_model(
+    model: PreTrainedModel,
+    layer_indices_to_remove: List[int],
+    show_progress: bool = True
+) -> PreTrainedModel:
+    """
+    Remove specified layers from the model.
+    
+    This function performs the actual layer removal, modifying the model
+    in-place for memory efficiency.
+    
+    Args:
+        model: Model to modify
+        layer_indices_to_remove: Sorted list of layer indices to remove
+        show_progress: Whether to show progress bar
+        
+    Returns:
+        Modified model with layers removed
+    """
+```
+
 ### Utility Functions
 
 #### `validate_model_for_glu_pruning`
@@ -421,14 +548,30 @@ The CLI provides several commands:
 
 ```bash
 optipfair prune --model-path MODEL_PATH --output-path OUTPUT_PATH 
-    [--pruning-type {MLP_GLU}] 
+    [--pruning-type {MLP_GLU,DEPTH}] 
     [--method {MAW,VOW,PON}] 
     [--pruning-percentage PERCENTAGE] 
     [--expansion-rate RATE] 
+    [--num-layers-to-remove NUM] 
+    [--layer-indices INDICES] 
+    [--layer-selection-method {last,custom}] 
     [--device DEVICE] 
     [--dtype {auto,float32,float16,bfloat16}] 
     [--verbose/--quiet]
 ```
+
+**MLP_GLU Pruning Options:**
+- `--method`: Neuron selection method (MAW, VOW, or PON)
+- `--pruning-percentage`: Percentage of neurons to prune (0-100)
+- `--expansion-rate`: Target expansion rate (mutually exclusive with pruning-percentage)
+
+**DEPTH Pruning Options:**
+- `--num-layers-to-remove`: Number of layers to remove
+- `--layer-indices`: Comma-separated layer indices to remove (e.g., "2,5,8")
+- `--pruning-percentage`: Percentage of layers to remove (for DEPTH mode)
+- `--layer-selection-method`: Method for selecting layers (last, custom)
+
+**Note:** For DEPTH pruning, specify exactly one of: `--num-layers-to-remove`, `--layer-indices`, or `--pruning-percentage`.
 
 ### `analyze`
 
