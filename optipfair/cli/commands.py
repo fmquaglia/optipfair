@@ -22,33 +22,77 @@ def cli():
 
 @cli.command()
 @click.option('--model-path', required=True, help='Path or identifier of the model to prune.')
-@click.option('--pruning-type', default='MLP_GLU', type=click.Choice(['MLP_GLU']), 
+@click.option('--pruning-type', default='MLP_GLU', type=click.Choice(['MLP_GLU', 'DEPTH']), 
               help='Type of pruning to apply.')
 @click.option('--method', default='MAW', type=click.Choice(['MAW', 'VOW', 'PON']), 
-              help='Method to calculate neuron importance.')
+              help='Method to calculate neuron importance (MLP_GLU only).')
 @click.option('--pruning-percentage', default=None, type=float, 
-              help='Percentage of neurons to prune (0-100).')
+              help='Percentage of neurons/layers to prune (0-100).')
 @click.option('--expansion-rate', default=None, type=float, 
-              help='Target expansion rate in percentage (mutually exclusive with pruning-percentage).')
+              help='Target expansion rate in percentage (MLP_GLU only, mutually exclusive with pruning-percentage).')
+@click.option('--num-layers-to-remove', default=None, type=int, 
+              help='Number of layers to remove (DEPTH only).')
+@click.option('--layer-indices', default=None, type=str, 
+              help='Comma-separated layer indices to remove (DEPTH only, e.g., "2,5,8").')
+@click.option('--layer-selection-method', default='last', type=click.Choice(['last', 'first', 'custom']), 
+              help='Method for selecting layers to remove (DEPTH only).')
 @click.option('--output-path', required=True, help='Path to save the pruned model.')
 @click.option('--device', default='auto', help='Device to use for computation (auto, cpu, cuda, cuda:0, etc.)')
 @click.option('--dtype', default='auto', type=click.Choice(['auto', 'float32', 'float16', 'bfloat16']), 
               help='Data type to load the model with.')
 @click.option('--verbose/--quiet', default=True, help='Whether to show verbose output.')
 def prune(model_path, pruning_type, method, pruning_percentage, expansion_rate, 
+          num_layers_to_remove, layer_indices, layer_selection_method,
           output_path, device, dtype, verbose):
     """Prune a language model using the specified parameters."""
     # Configure logging based on verbosity
     log_level = logging.INFO if verbose else logging.WARNING
     logging.basicConfig(level=log_level, format='%(message)s')
     
-    # Validate inputs
-    if pruning_percentage is not None and expansion_rate is not None:
-        raise click.UsageError("--pruning-percentage and --expansion-rate are mutually exclusive.")
+    # Validate inputs based on pruning type
+    if pruning_type == 'MLP_GLU':
+        if pruning_percentage is not None and expansion_rate is not None:
+            raise click.UsageError("--pruning-percentage and --expansion-rate are mutually exclusive.")
+        
+        if pruning_percentage is None and expansion_rate is None:
+            pruning_percentage = 10
+            logger.info(f"No pruning target specified, defaulting to {pruning_percentage}% pruning.")
+        
+        # Validate that depth-specific parameters are not used
+        if num_layers_to_remove is not None:
+            raise click.UsageError("--num-layers-to-remove is only valid with --pruning-type DEPTH.")
+        if layer_indices is not None:
+            raise click.UsageError("--layer-indices is only valid with --pruning-type DEPTH.")
+        if layer_selection_method != 'last' and (pruning_percentage is not None or expansion_rate is not None):
+            raise click.UsageError("--layer-selection-method is only valid with --pruning-type DEPTH.")
     
-    if pruning_percentage is None and expansion_rate is None:
-        pruning_percentage = 10
-        logger.info(f"No pruning target specified, defaulting to {pruning_percentage}% pruning.")
+    elif pruning_type == 'DEPTH':
+        # Count how many depth pruning parameters are specified
+        depth_params = [p for p in [num_layers_to_remove, layer_indices, pruning_percentage] if p is not None]
+        
+        if len(depth_params) == 0:
+            raise click.UsageError("For DEPTH pruning, specify one of: --num-layers-to-remove, --layer-indices, or --pruning-percentage.")
+        
+        if len(depth_params) > 1:
+            raise click.UsageError("For DEPTH pruning, --num-layers-to-remove, --layer-indices, and --pruning-percentage are mutually exclusive.")
+        
+        # Validate that MLP-specific parameters are not used
+        if expansion_rate is not None:
+            raise click.UsageError("--expansion-rate is only valid with --pruning-type MLP_GLU.")
+        if method != 'MAW':
+            raise click.UsageError("--method is only valid with --pruning-type MLP_GLU.")
+        
+        # Parse layer indices if provided
+        parsed_layer_indices = None
+        if layer_indices is not None:
+            try:
+                parsed_layer_indices = [int(idx.strip()) for idx in layer_indices.split(',')]
+            except ValueError:
+                raise click.UsageError("--layer-indices must be comma-separated integers (e.g., '2,5,8').")
+        
+        # Set depth pruning percentage as the main pruning parameter
+        depth_pruning_percentage = pruning_percentage
+        pruning_percentage = None  # Clear for MLP compatibility
     
     # Determine device
     if device == 'auto':
@@ -90,21 +134,42 @@ def prune(model_path, pruning_type, method, pruning_percentage, expansion_rate,
     logger.info(f"Original model parameters: {original_params:,}")
     
     # Apply pruning
-    logger.info(f"Pruning model with {pruning_type} pruning, {method} neuron selection method")
-    if pruning_percentage is not None:
-        logger.info(f"Target: {pruning_percentage}% reduction in neurons")
-    else:
-        logger.info(f"Target: {expansion_rate}% expansion rate")
+    if pruning_type == 'MLP_GLU':
+        logger.info(f"Pruning model with {pruning_type} pruning, {method} neuron selection method")
+        if pruning_percentage is not None:
+            logger.info(f"Target: {pruning_percentage}% reduction in neurons")
+        else:
+            logger.info(f"Target: {expansion_rate}% expansion rate")
+        
+        pruned_model, stats = prune_model(
+            model=model,
+            pruning_type=pruning_type,
+            neuron_selection_method=method,
+            pruning_percentage=pruning_percentage,
+            expansion_rate=expansion_rate,
+            show_progress=verbose,
+            return_stats=True,
+        )
     
-    pruned_model, stats = prune_model(
-        model=model,
-        pruning_type=pruning_type,
-        neuron_selection_method=method,
-        pruning_percentage=pruning_percentage,
-        expansion_rate=expansion_rate,
-        show_progress=verbose,
-        return_stats=True,
-    )
+    elif pruning_type == 'DEPTH':
+        logger.info(f"Pruning model with {pruning_type} pruning, {layer_selection_method} layer selection method")
+        if num_layers_to_remove is not None:
+            logger.info(f"Target: Remove {num_layers_to_remove} layers")
+        elif parsed_layer_indices is not None:
+            logger.info(f"Target: Remove layers {parsed_layer_indices}")
+        else:
+            logger.info(f"Target: Remove {depth_pruning_percentage}% of layers")
+        
+        pruned_model, stats = prune_model(
+            model=model,
+            pruning_type=pruning_type,
+            num_layers_to_remove=num_layers_to_remove,
+            layer_indices=parsed_layer_indices,
+            depth_pruning_percentage=depth_pruning_percentage,
+            layer_selection_method=layer_selection_method,
+            show_progress=verbose,
+            return_stats=True,
+        )
     
     # Log pruning statistics
     logger.info("Pruning complete!")

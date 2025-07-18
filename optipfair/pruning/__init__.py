@@ -5,10 +5,12 @@ This package provides various pruning methods for transformer-based models.
 """
 
 from .mlp_glu import prune_model_mlp_glu
+from .depth import prune_model_depth
 from .utils import validate_model_for_glu_pruning, get_model_layers, count_parameters, get_pruning_statistics
 
 __all__ = [
     "prune_model_mlp_glu",
+    "prune_model_depth",
     "validate_model_for_glu_pruning",
     "get_model_layers",
     "count_parameters",

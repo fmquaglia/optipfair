@@ -27,7 +27,10 @@ pip install "optipfair[viz]"
 
 ### Model Pruning
 
-OptiPFair supports pruning of transformer-based models that use GLU architecture in their MLP layers, including LLaMA, Mistral, and similar models.
+OptiPFair supports two main types of pruning:
+
+1. **MLP GLU Pruning**: Prunes neurons in transformer models that use GLU architecture in their MLP layers, including LLaMA, Mistral, and similar models.
+2. **Depth Pruning**: Removes entire transformer layers from models, which is more aggressive than neuron-level pruning but can lead to significant efficiency gains.
 
 #### Python API for Pruning
 
@@ -41,7 +44,7 @@ model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B")
 # Basic usage (10% pruning with MAW method)
 pruned_model = prune_model(model)
 
-# Advanced usage
+# Advanced MLP GLU pruning
 pruned_model, stats = prune_model(
     model=model,
     pruning_type="MLP_GLU",              # Type of pruning to apply
@@ -50,6 +53,35 @@ pruned_model, stats = prune_model(
     # expansion_rate=140,                # Alternatively, specify target expansion rate
     show_progress=True,                  # Show progress during pruning
     return_stats=True                    # Return pruning statistics
+)
+
+# Depth pruning examples
+pruned_model, stats = prune_model(
+    model=model,
+    pruning_type="DEPTH",                # Type of pruning to apply
+    num_layers_to_remove=3,              # Number of layers to remove
+    layer_selection_method="last",       # Method for selecting layers ("last", "first", "custom")
+    show_progress=True,                  # Show progress during pruning
+    return_stats=True                    # Return pruning statistics
+)
+
+# Alternative depth pruning with percentage
+pruned_model, stats = prune_model(
+    model=model,
+    pruning_type="DEPTH",                # Type of pruning to apply
+    depth_pruning_percentage=25.0,       # Percentage of layers to remove
+    layer_selection_method="first",      # Remove from beginning
+    show_progress=True,
+    return_stats=True
+)
+
+# Depth pruning with custom layer indices
+pruned_model, stats = prune_model(
+    model=model,
+    pruning_type="DEPTH",                # Type of pruning to apply
+    layer_indices=[2, 5, 8, 11],         # Specific layers to remove
+    show_progress=True,
+    return_stats=True
 )
 
 # Print pruning statistics
@@ -64,10 +96,10 @@ pruned_model.save_pretrained("./pruned-model")
 #### Command-Line Interface for Pruning
 
 ```bash
-# Basic usage
+# Basic MLP GLU pruning
 optipfair prune --model-path meta-llama/Llama-3.2-1B --output-path ./pruned-model
 
-# Advanced usage
+# Advanced MLP GLU pruning
 optipfair prune \
   --model-path meta-llama/Llama-3.2-1B \
   --pruning-type MLP_GLU \
@@ -76,11 +108,34 @@ optipfair prune \
   --output-path ./pruned-model \
   --device cuda \
   --dtype float16
+
+# Depth pruning - remove specific number of layers
+optipfair prune \
+  --model-path meta-llama/Llama-3.2-1B \
+  --pruning-type DEPTH \
+  --num-layers-to-remove 3 \
+  --layer-selection-method last \
+  --output-path ./pruned-model
+
+# Depth pruning - remove percentage of layers
+optipfair prune \
+  --model-path meta-llama/Llama-3.2-1B \
+  --pruning-type DEPTH \
+  --pruning-percentage 25 \
+  --layer-selection-method first \
+  --output-path ./pruned-model
+
+# Depth pruning - remove specific layers
+optipfair prune \
+  --model-path meta-llama/Llama-3.2-1B \
+  --pruning-type DEPTH \
+  --layer-indices "2,5,8,11" \
+  --output-path ./pruned-model
 ```
 
 ### Neuron Selection Methods
 
-OptiPFair supports three methods for calculating neuron importance:
+OptiPFair supports three methods for calculating neuron importance (used with MLP_GLU pruning only):
 
 1. **MAW (Maximum Absolute Weight)** - Default method that identifies neurons based on the maximum absolute weight values in their connections. Most effective for GLU architectures.
 
@@ -109,6 +164,42 @@ OptiPFair supports three methods for calculating neuron importance:
        model=model,
        neuron_selection_method="PON",
        pruning_percentage=20
+   )
+   ```
+
+### Layer Selection Methods for Depth Pruning
+
+OptiPFair supports three methods for selecting which layers to remove during depth pruning:
+
+1. **Last (default)** - Removes layers from the end of the model. Generally provides the best performance retention.
+
+   ```python
+   pruned_model = prune_model(
+       model=model,
+       pruning_type="DEPTH",
+       num_layers_to_remove=3,
+       layer_selection_method="last"
+   )
+   ```
+
+2. **First** - Removes layers from the beginning of the model.
+
+   ```python
+   pruned_model = prune_model(
+       model=model,
+       pruning_type="DEPTH",
+       num_layers_to_remove=3,
+       layer_selection_method="first"
+   )
+   ```
+
+3. **Custom** - Removes specific layers by index (automatically set when using `layer_indices`).
+
+   ```python
+   pruned_model = prune_model(
+       model=model,
+       pruning_type="DEPTH",
+       layer_indices=[2, 5, 8]  # Remove layers 2, 5, and 8
    )
    ```
 
@@ -468,9 +559,9 @@ _, original_metrics = visualize_bias(
     output_dir="./bias_analysis/original"
 )
 
-# Apply pruning
-print("\nApplying pruning...")
-pruned_model, stats = prune_model(
+# Apply MLP GLU pruning
+print("\nApplying MLP GLU pruning...")
+pruned_model_mlp, stats_mlp = prune_model(
     model=model,
     pruning_type="MLP_GLU",
     neuron_selection_method="MAW",
@@ -479,33 +570,55 @@ pruned_model, stats = prune_model(
     return_stats=True
 )
 
-print(f"Reduction: {stats['reduction']:,} parameters ({stats['percentage_reduction']:.2f}%)")
+print(f"MLP GLU Reduction: {stats_mlp['reduction']:,} parameters ({stats_mlp['percentage_reduction']:.2f}%)")
 
-# Analyze bias in pruned model
-print("\nAnalyzing bias in pruned model...")
-_, pruned_metrics = visualize_bias(
-    pruned_model,
+# Apply depth pruning
+print("\nApplying depth pruning...")
+pruned_model_depth, stats_depth = prune_model(
+    model=model,
+    pruning_type="DEPTH",
+    num_layers_to_remove=3,
+    layer_selection_method="last",
+    show_progress=True,
+    return_stats=True
+)
+
+print(f"Depth Reduction: {stats_depth['reduction']:,} parameters ({stats_depth['percentage_reduction']:.2f}%)")
+
+# Analyze bias in both pruned models
+print("\nAnalyzing bias in MLP GLU pruned model...")
+_, pruned_metrics_mlp = visualize_bias(
+    pruned_model_mlp,
     tokenizer,
     prompt_pairs=prompt_pairs,
     visualization_types=["mean_diff"],
-    output_dir="./bias_analysis/pruned"
+    output_dir="./bias_analysis/pruned_mlp"
+)
+
+print("\nAnalyzing bias in depth pruned model...")
+_, pruned_metrics_depth = visualize_bias(
+    pruned_model_depth,
+    tokenizer,
+    prompt_pairs=prompt_pairs,
+    visualization_types=["mean_diff"],
+    output_dir="./bias_analysis/pruned_depth"
 )
 
 # Compare bias metrics
 original_overall = original_metrics["pair_1"]["metrics"]["overall_metrics"]
-pruned_overall = pruned_metrics["pair_1"]["metrics"]["overall_metrics"]
+pruned_overall_mlp = pruned_metrics_mlp["pair_1"]["metrics"]["overall_metrics"]
+pruned_overall_depth = pruned_metrics_depth["pair_1"]["metrics"]["overall_metrics"]
 
 print("\nBias Comparison:")
 print(f"Original model mean difference: {original_overall['mean_difference']:.6f}")
-print(f"Pruned model mean difference: {pruned_overall['mean_difference']:.6f}")
+print(f"MLP GLU pruned model mean difference: {pruned_overall_mlp['mean_difference']:.6f}")
+print(f"Depth pruned model mean difference: {pruned_overall_depth['mean_difference']:.6f}")
 
-bias_change = (pruned_overall['mean_difference'] - original_overall['mean_difference']) / original_overall['mean_difference'] * 100
-print(f"Bias change: {bias_change:+.2f}%")
+bias_change_mlp = (pruned_overall_mlp['mean_difference'] - original_overall['mean_difference']) / original_overall['mean_difference'] * 100
+bias_change_depth = (pruned_overall_depth['mean_difference'] - original_overall['mean_difference']) / original_overall['mean_difference'] * 100
 
-if bias_change < 0:
-    print("Bias decreased after pruning")
-else:
-    print("Bias increased after pruning")
+print(f"MLP GLU bias change: {bias_change_mlp:+.2f}%")
+print(f"Depth pruning bias change: {bias_change_depth:+.2f}%")
 ```
 
 ### Example 2: Detailed Mean Activations Analysis
@@ -609,7 +722,8 @@ According to the roadmap, OptiPFair has several planned extensions:
   - PCA analysis for dimensional reduction
   - Quantitative bias metrics
 
-### Version 0.2.0
+### Version 0.2.0 (In Progress)
+- **Depth Pruning**: Implement pruning techniques for entire transformer layers ✓
 - **Attention Mechanism Pruning**: Implement pruning techniques for attention layers
 - **Transformer Block Pruning**: Implement pruning techniques for entire transformer blocks
 
@@ -630,7 +744,9 @@ According to the roadmap, OptiPFair has several planned extensions:
 
 ### Common Issues
 
-1. **Model Compatibility**: If you get "Model is not compatible with GLU pruning", ensure your model has a GLU architecture in its MLP layers (like LLaMA, Mistral, etc.)
+1. **Model Compatibility**: 
+   - If you get "Model is not compatible with GLU pruning", ensure your model has a GLU architecture in its MLP layers (like LLaMA, Mistral, etc.)
+   - Depth pruning works with any transformer model and doesn't require GLU architecture
 
 2. **Layer Naming and Selection**: When using bias visualization functions, be aware of:
    - Layer names must match exactly what's in the model's activation dictionary
