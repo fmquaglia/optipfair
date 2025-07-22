@@ -29,12 +29,22 @@
 
 ### 🚀 Interactive Demos: Try OptiPFair NOW
 
-Experience the power of OptiPFair directly in your browser. No installation, no setup.
+Experience OptiPFair's capabilities directly in your browser.
 
-| Live Bias Visualization (Recommended Demo) | Pruning Compatibility Check | Bias Compatibility Check |
-| :---: | :---: | :---: |
-| Analyze any compatible model from Hugging Face with a full UI. | Check if your model's architecture can be pruned by OptiPFair. | The coder's alternative to our live demo. |
-| **[🚀 Launch the Live Demo on HF Spaces](https://huggingface.co/spaces/oopere/optipfair-bias-analyzer)** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/pruning_compatibility_check.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/bias_compatibility_check.ipynb) |
+| Live Bias Visualization Demo |
+| :--------------------------: |
+| Analyze any compatible model from Hugging Face with a full UI. No setup required. |
+| **[🚀 Launch the Live Demo on HF Spaces](https://huggingface.co/spaces/oopere/optipfair-bias-analyzer)** |
+
+#### Tutorials on Google Colab
+
+Explore OptiPFair’s features with these interactive notebooks.
+
+| Tutorial | Description | Link |
+| :--- | :--- | :---: |
+| **Depth Pruning** | Learn how to remove entire transformer layers from models like Llama-3. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/depth_pruning.ipynb) |
+| **Pruning Compatibility** | Check if your model's architecture can be pruned by OptiPFair. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/pruning_compatibility_check.ipynb) |
+| **Bias Compatibility** | The coder's alternative to our live demo for bias analysis. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/bias_compatibility_check.ipynb) |
 
 ---
 ### ✅ Why OptiPFair?
@@ -42,6 +52,8 @@ Experience the power of OptiPFair directly in your browser. No installation, no 
 OptiPFair is more than just another pruning library. It's a toolkit designed for the modern AI developer who cares about both performance and responsibility.
 
 * **Efficiency & Fairness in One Place**: Stop juggling tools. OptiPFair is the only library designed to integrate structured pruning with powerful, intuitive bias visualization and analysis.
+
+* **Dual Pruning Strategies**: OptiPFair supports both **Width Pruning** (removing neurons from MLP layers) and **Depth Pruning** (removing entire transformer layers), giving you flexible control over the efficiency-performance trade-off.
 
 * **Optimized for Modern Architectures**: We focus on what works now. The library is specialized for GLU-based models like LLaMA, Mistral, Gemma, and Qwen, ensuring relevant and effective pruning.
 
@@ -120,6 +132,35 @@ The pruning process yields tangible results in model size and performance. Here'
 
 *Results based on the [MAW pruning method](#neuron-selection-methods). Full benchmark results will be published shortly.*
 
+### Pruning Transformer Layers (Depth Pruning)
+
+Remove entire layers from a model for significant efficiency gains. Here, we remove the last 4 layers.
+
+```python
+from transformers import AutoModelForCausalLM
+from optipfair import prune_model
+
+# Load a pre-trained model
+model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B")
+
+# Remove the last 4 transformer layers
+pruned_model, stats = prune_model(
+    model=model,
+    pruning_type="DEPTH",
+    num_layers_to_remove=4,
+    layer_selection_method="last", # Recommended for best performance retention
+    show_progress=True,
+    return_stats=True
+)
+
+# Print pruning statistics
+print(f"Original layers: {stats['original_layers']}")
+print(f"Pruned layers: {stats['pruned_layers']}")
+print(f"Reduction: {stats['reduction']:,} parameters ({stats['percentage_reduction']:.2f}%)")
+
+# Save the pruned model
+pruned_model.save_pretrained("./pruned-depth-llama-model")
+
 ### Visualizing Bias with the Python API
 Generate visualizations to analyze how a model's activations differ when processing prompts with varying demographic attributes.
 
@@ -171,18 +212,19 @@ OptiPFair is designed to work with transformer-based language models that use GL
 * **Phi** models
 * ... and other models with a similar GLU architecture.
 
-### Neuron Selection Methods
-OptiPFair provides multiple methods for calculating neuron importance, allowing you to tailor the pruning strategy to your specific needs:
+### Pruning Strategies: Neurons vs. Layers
 
-1.  **MAW (Maximum Absolute Weight)**: The default and typically most effective method for GLU architectures. It identifies influential neurons based on the magnitude of their connections.
-2.  **VOW (Variance of Weights)**: Identifies neurons based on the variance of their weights.
-3.  **PON (Product of Norms)**: Uses the product of L1 norms to identify important neurons.
+OptiPFair offers two powerful structured pruning strategies:
 
-### Expansion Rate vs. Pruning Percentage
-You can define the pruning target in two intuitive ways:
+1.  **MLP Pruning (Width Pruning)**: Reduces the number of neurons within the MLP layers of GLU-based models. This is a fine-grained approach to improve efficiency. You can control it via `pruning_percentage` or a target `expansion_rate`. It uses several neuron importance metrics:
+    * **MAW (Maximum Absolute Weight)**: Default and most effective method.
+    * **VOW (Variance of Weights)**
+    * **PON (Product of Norms)**
 
-1.  **Pruning Percentage**: Directly specify the percentage of neurons to remove (e.g., `20%`).
-2.  **Expansion Rate**: Specify the target MLP expansion rate as a percentage (e.g., target a `140%` expansion rate, down from a model's original `400%`). This is often more comparable across different model sizes.
+2.  **Depth Pruning (Layer Pruning)**: Removes entire transformer layers from the model. This is a more aggressive technique that can yield significant reductions in parameters and latency. It's universally compatible with most transformer architectures. You can define which layers to remove by:
+    * **Number**: `num_layers_to_remove=4`
+    * **Percentage**: `depth_pruning_percentage=25`
+    * **Specific Indices**: `layer_indices=[12, 13, 14, 15]`
 
 ---
 
@@ -194,7 +236,6 @@ The OptiPFair project is actively developed. Here's what's planned for the futur
 Our goal is to make OptiPFair the go-to toolkit for efficient and fair model optimization. Key upcoming features include:
 
 * **Attention Pruning**: Implementing pruning methods for attention heads and layers. 
-* **Depth Pruning**: Adding support for removing entire layers or blocks. 
 * **Advanced Benchmarks**: Integrating more comprehensive performance and evaluation benchmarks.
 * **GPU Optimizations**: Creating a v2.0 with significant GPU-specific optimizations for faster execution. 
 * **Large-Scale Model Support**: Adding compatibility for DeepSpeed and FSDP to handle 70B+ models efficiently. 
