@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: optipfair
-Version: 0.1.3
+Version: 0.1.4
 Summary: A library for structured pruning & Bias visualization of large language models
 Home-page: https://github.com/peremartra/optipfair
 Author: Pere Martra
@@ -36,49 +36,104 @@ Requires-Dist: seaborn>=0.11.0; extra == "viz"
 Requires-Dist: numpy>=1.20.0; extra == "viz"
 Requires-Dist: pandas>=1.3.0; extra == "viz"
 Requires-Dist: scikit-learn>=1.0.0; extra == "viz"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
 # OptiPFair
 
-![Optimize LLMs](/images/optiPfair.png)
+<div align="center">
+  <img src="images/optiPfair.png" alt="OptiPFair Logo" width="600"/>
+</div>
+
+<div align="center">
+  <h1>optiPfair</h1>
+  <strong>The Python library for making LLMs both efficient (via pruning) and fair (via bias analysis).</strong>
+</div>
+
+<p align="center">
+  <a href="https://pypi.org/project/optipfair/"><img alt="PyPI Version" src="https://img.shields.io/pypi/v/optipfair?color=blue"></a>
+  <a href="https://github.com/peremartra/optipfair/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/peremartra/optipfair?color=green"></a>
+  <a href="https://github.com/peremartra/optipfair/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/peremartra/optipfair?style=social"></a>
+</p>
 
 <div align="center">
     <h3>
-        <a href="https://peremartra.github.io/optipfair/" target="_blank">DOCUMENTATION</a> | 
+        <a href="https://peremartra.github.io/optipfair/" target="_blank">Documentation</a>
+        ·
+        <a href="https://github.com/peremartra/optipfair/issues" target="_blank">Report Bug</a>
+        ·
+        <a href="https://github.com/peremartra/optipfair/issues" target="_blank">Request Feature</a>
     </h3>
 </div>
 
-A Python library for structured pruning, and Bias visualization,  of large language models, with a focus on GLU architectures and fairness analysis.
+---
 
+### 🚀 Interactive Demos: Try OptiPFair NOW
 
-## Overview
+Experience the power of OptiPFair directly in your browser. No installation, no setup.
 
-OptiPFair enables efficient pruning of large language models while maintaining their performance. It implements various structured pruning methods, starting with MLP pruning for GLU architectures (as used in models like LLaMA, Mistral, etc.).
+| Live Bias Visualization (Recommended Demo) | Pruning Compatibility Check | Bias Compatibility Check |
+| :---: | :---: | :---: |
+| Analyze any compatible model from Hugging Face with a full UI. | Check if your model's architecture can be pruned by OptiPFair. | The coder's alternative to our live demo. |
+| **[🚀 Launch the Live Demo on HF Spaces](https://huggingface.co/spaces/oopere/optipfair-bias-analyzer)** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/pruning_compatibility_check.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/bias_compatibility_check.ipynb) |
 
+---
+### ✅ Why OptiPFair?
 
-Key features:
-- GLU architecture-aware pruning that preserves model structure 
-- Multiple neuron importance calculation methods
-- Support for both pruning percentage and target expansion rate
-- Simple Python API and CLI interface
-- Progress tracking and detailed statistics
-- **NEW**: Bias visualization tools to analyze and understand fairness issues
+OptiPFair is more than just another pruning library. It's a toolkit designed for the modern AI developer who cares about both performance and responsibility.
 
+* **Efficiency & Fairness in One Place**: Stop juggling tools. OptiPFair is the only library designed to integrate structured pruning with powerful, intuitive bias visualization and analysis.
 
-## Installation
+* **Optimized for Modern Architectures**: We focus on what works now. The library is specialized for GLU-based models like LLaMA, Mistral, Gemma, and Qwen, ensuring relevant and effective pruning.
 
-```bash
-# From PyPI 
+* **Go Beyond Numbers with Bias Visualization**: Don't just get a bias score. Our visualization tools (PCA, heatmaps, mean differences) help you *understand* how and where your model encodes bias, enabling more effective mitigation.
+
+* **🤖 AI-Assisted Development**: Accelerate your workflow using the included [`LLM Reference Manual`](https://github.com/peremartra/optipfair/blob/main/optipfair_llm_reference_manual.txt). Provide it to your favorite LLM (ChatGPT, Claude) to get expert-level help and generate integration code instantly.
+<p align="center">
+      <img src="images/optipFair_llmflow.gif" alt="AI Pair Programming with OptiPFair" width="500"/>
+</p>
+
+* **🔬 Backed by Research**: Our methods aren't arbitrary. They are built upon and validated by ongoing applied research in model optimization and fairness analysis.
+
+---
+### ⚙️ Installation
+Choose the installation method that best suits your needs. For bias visualization features, you'll need the [viz] extra.
+**Standard Installation**
+For core pruning functionality:
+```python
 pip install optipfair
+```
 
-# From source
-git clone https://github.com/yourusername/optipfair.git
+**Full Installation (with Bias Visualization)**
+To use the bias analysis and visualization tools, install with the [viz] extra dependencies:
+```python
+pip install "optipfair[viz]"
+```
+
+**Developer Installation**
+To install from the source for contributing or development:
+```bash
+git clone https://github.com/peremartra/optipfair.git
 cd optipfair
 pip install -e .
 ```
+---
+## ⚡ Quick Start
 
-## Quick Start
+See how to use OptiPFair's core features in just a few lines of code.
 
-### Python API
+### Pruning with the Python API
+
+Prune 20% of the MLP neurons from a model using the Maximum Absolute Weight (MAW) method.
 
 ```python
 from transformers import AutoModelForCausalLM
@@ -87,7 +142,7 @@ from optipfair import prune_model
 # Load a pre-trained model
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B")
 
-# Prune 20% of neurons from MLP layers using MAW method
+# Prune 20% of neurons from MLP layers
 pruned_model, stats = prune_model(
     model=model,
     pruning_type="MLP_GLU",
@@ -102,10 +157,21 @@ print(f"Original parameters: {stats['original_parameters']:,}")
 print(f"Pruned parameters: {stats['pruned_parameters']:,}")
 print(f"Reduction: {stats['reduction']:,} parameters ({stats['percentage_reduction']:.2f}%)")
 
-# Save pruned model
+# Save the pruned model
 pruned_model.save_pretrained("./pruned-llama-model")
 ```
-### Bias Visualization
+The pruning process yields tangible results in model size and performance. Here's a sample comparison for **Llama-3.2-1B** after pruning 20% of its MLP neurons:
+
+| Metric | Original Model | Pruned Model | Improvement |
+| :--- | :---: | :---: | :---: |
+| **Total Parameters** | 1.24B | 1.07B | **-13.03%** |
+| **Inference Speed** | *Benchmark in progress* | *Benchmark in progress* | *Coming soon* |
+| **MMLU Score** | *Benchmark in progress* | *Benchmark in progress* | *Minimal change expected* |
+
+*Results based on the [MAW pruning method](#neuron-selection-methods). Full benchmark results will be published shortly.*
+
+### Visualizing Bias with the Python API
+Generate visualizations to analyze how a model's activations differ when processing prompts with varying demographic attributes.
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -136,87 +202,66 @@ _, metrics = visualize_bias(
 overall = metrics["pair_1"]["metrics"]["overall_metrics"]
 print(f"Mean activation difference: {overall['mean_difference']:.6f}")
 ```
+The code above generates the following types of visualizations, allowing for a deep dive into model fairness:
+| ![Mean Image Differences](/images/mean_image_differences.png) | ![activation_differences_layer.png](/images/activation_differences_layer.png) | ![pca_analysis.png](/images/pca_analysis.png)
+| ---| --- | --- |
 
-### Command-Line Interface
+---
+## Dive Deeper: Features & Concepts
 
-```bash
-# Prune a model with default settings (10% pruning, MAW method)
-optipfair prune --model-path meta-llama/Llama-3.2-1B --output-path ./pruned-model
+For those who want to understand the nuts and bolts of OptiPFair.
 
-# Prune with custom settings
-optipfair prune \
-  --model-path meta-llama/Llama-3.2-1B \
-  --pruning-type MLP_GLU \
-  --method MAW \
-  --pruning-percentage 20 \
-  --output-path ./pruned-model
+### Supported Models
+OptiPFair is designed to work with transformer-based language models that use GLU architecture in their MLP layers. This includes most modern LLMs:
 
-# Use expansion rate instead of pruning percentage
-optipfair prune \
-  --model-path meta-llama/Llama-3.2-1B \
-  --expansion-rate 140 \
-  --output-path ./pruned-model
+* **LLaMA family** (LLaMA, LLaMA-2, LLaMA-3)
+* **Mistral** models
+* **Gemma** models
+* **Qwen** models
+* **Phi** models
+* ... and other models with a similar GLU architecture.
 
-# Analyze a model's architecture
-optipfair analyze --model-path meta-llama/Llama-3.2-1B
-```
+### Neuron Selection Methods
+OptiPFair provides multiple methods for calculating neuron importance, allowing you to tailor the pruning strategy to your specific needs:
 
-## Neuron Selection Methods
+1.  **MAW (Maximum Absolute Weight)**: The default and typically most effective method for GLU architectures. It identifies influential neurons based on the magnitude of their connections.
+2.  **VOW (Variance of Weights)**: Identifies neurons based on the variance of their weights.
+3.  **PON (Product of Norms)**: Uses the product of L1 norms to identify important neurons.
 
-OptiPFair supports three methods for calculating neuron importance:
+### Expansion Rate vs. Pruning Percentage
+You can define the pruning target in two intuitive ways:
 
-1. **MAW (Maximum Absolute Weight)** - Default method that identifies influential neurons based on the magnitude of their connections. Typically provides the best pruning results.
+1.  **Pruning Percentage**: Directly specify the percentage of neurons to remove (e.g., `20%`).
+2.  **Expansion Rate**: Specify the target MLP expansion rate as a percentage (e.g., target a `140%` expansion rate, down from a model's original `400%`). This is often more comparable across different model sizes.
 
-2. **VOW (Variance of Weights)** - Identifies neurons based on the variance of their weights. May be useful for specific architectures.
+---
 
-3. **PON (Product of Norms)** - Uses the product of L1 norms to identify important neurons. This method may be applicable in certain contexts.
+## 🗺️ Roadmap & Community
 
-## Documentation
+The OptiPFair project is actively developed. Here's what's planned for the future.
 
-Complete documentation is available at [https://peremartra.github.io/optipfair/](https://peremartra.github.io/optipfair/).
+### Future Roadmap
+Our goal is to make OptiPFair the go-to toolkit for efficient and fair model optimization. Key upcoming features include:
 
-## Supported Models
+* **Attention Pruning**: Implementing pruning methods for attention heads and layers. 
+* **Depth Pruning**: Adding support for removing entire layers or blocks. 
+* **Advanced Benchmarks**: Integrating more comprehensive performance and evaluation benchmarks.
+* **GPU Optimizations**: Creating a v2.0 with significant GPU-specific optimizations for faster execution. 
+* **Large-Scale Model Support**: Adding compatibility for DeepSpeed and FSDP to handle 70B+ models efficiently. 
 
-At his moment, OptiPFair is designed to work with transformer-based language models that use GLU architecture in their MLP layers, including:
+### 🤝 Contributing
+Contributions are welcome! Whether it's bug reports, feature requests, or code contributions, please check out our [contributing guidelines](CONTRIBUTING.md) to get started.
 
-- LLaMA family (LLaMA, LLaMA-2, LLaMA-3, )
-- Mistral models, QWeN, Gemma...
-- And other models with similar GLU architecture
+### Citation
+If you use OptiPFair in your research or projects, please cite the library:
 
-## Expansion Rate vs Pruning Percentage
-
-OptiPFair supports two ways to specify the pruning target:
-
-1. **Pruning Percentage** - Directly specify what percentage of neurons to remove (e.g., 20%)
-
-2. **Expansion Rate** - Specify the target expansion rate (ratio of intermediate size to hidden size) as a percentage (e.g., 140% instead of the default 400%)
-
-The expansion rate approach is often more intuitive when comparing across different model scales.
-
-## Future Roadmap
-
-- Support for attention layer pruning
-- Whole block pruning
-- Integrated evaluation benchmarks
-- Bias visualizations. 
-
-## Citation
-
-If you use OptiPFair in your research, please cite:
-
-```
-@software{optipfair2025,
+```bibtex
+@software{optipfair,
   author = {Pere Martra},
-  title = {OptiPFair: A Library for Structured Pruning of Large Language Models},
-  year = {2025},
-  url = {https://github.com/yourusername/optipfair}
+  title = {OptiPFair: A Library for Structured Pruning and Bias Visualization of Large Language Models},
+  year = {2024},
+  url = {https://github.com/peremartra/optipfair}
 }
 ```
-
-## License
-
-Apache 2.0
-
-## Contributing
-
-Contributions are welcome! Please check out our [contributing guidelines](CONTRIBUTING.md) for details.
+### License
+This project is licensed under the Apache 2.0 License. See the LICENSE file for details.

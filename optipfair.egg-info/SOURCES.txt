@@ -31,6 +31,7 @@ optipfair/cli/commands.py
 optipfair/evaluation/__init__.py
 optipfair/evaluation/benchmarks.py
 optipfair/pruning/__init__.py
+optipfair/pruning/depth.py
 optipfair/pruning/mlp_glu.py
 optipfair/pruning/utils.py
 optipfair/pruning/future_extensions/__init__.py
