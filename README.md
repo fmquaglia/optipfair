@@ -209,7 +209,6 @@ OptiPFair is designed to work with transformer-based language models that use GL
 * **Mistral** models
 * **Gemma** models
 * **Qwen** models
-* **Phi** models
 * ... and other models with a similar GLU architecture.
 
 ### Pruning Strategies: Neurons vs. Layers
