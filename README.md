@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/optipfair/"><img alt="PyPI Version" src="https://img.shields.io/pypi/v/optipfair?color=blue"></a>
+  <a href="https://pypi.org/project/optipfair/"><img alt="Downloads" src="https://img.shields.io/pypi/dm/optipfair?color=orange"></a>
   <a href="https://github.com/peremartra/optipfair/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/peremartra/optipfair?color=green"></a>
   <a href="https://github.com/peremartra/optipfair/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/peremartra/optipfair?style=social"></a>
 </p>
