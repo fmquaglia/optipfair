@@ -10,10 +10,11 @@ from typing import Optional, Union, Dict, Any
 from transformers import PreTrainedModel
 
 from .pruning.mlp_glu import prune_model_mlp_glu
-from .pruning.depth import prune_model_depth
+from .pruning.depth import prune_model_depth, analyze_layer_importance
+
 from .pruning.utils import get_pruning_statistics
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 # Configure logging
 logging.basicConfig(
