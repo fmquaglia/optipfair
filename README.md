@@ -44,6 +44,7 @@ Explore OptiPFair’s features with these interactive notebooks.
 | Tutorial | Description | Link |
 | :--- | :--- | :---: |
 | **Depth Pruning** | Learn how to remove entire transformer layers from models like Llama-3. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/depth_pruning.ipynb) |
+| **Layer Importance** | Identify which transformer layers contribute the least to your model. | WIP ](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/depth_pruning.ipynb) |
 | **Pruning Compatibility** | Check if your model's architecture can be pruned by OptiPFair. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/pruning_compatibility_check.ipynb) |
 | **Bias Compatibility** | The coder's alternative to our live demo for bias analysis. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/bias_compatibility_check.ipynb) |
 
@@ -161,6 +162,44 @@ print(f"Reduction: {stats['reduction']:,} parameters ({stats['percentage_reducti
 
 # Save the pruned model
 pruned_model.save_pretrained("./pruned-depth-llama-model")
+```
+
+### Analyzing Layer Importance
+Before performing Depth Pruning, you can analyze which layers are the most redundant. This function measures the cosine similarity between the input and output of each transformer layer—a higher similarity (lower distance score) suggests the layer has less impact on the final representation.
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from torch.utils.data import DataLoader, TensorDataset
+import torch
+from optipfair import analyze_layer_importance
+
+# 1. Load a model and tokenizer
+model_name = "distilgpt2"
+model = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
+
+# 2. Prepare a sample dataloader (this is the user's responsibility)
+dummy_texts = ["This is a sample sentence." for _ in range(16)]
+inputs = tokenizer(dummy_texts, return_tensors="pt", padding=True, truncation=True, max_length=128)
+dataset = TensorDataset(inputs['input_ids'], inputs['attention_mask'])
+dataloader = DataLoader(dataset, batch_size=8)
+
+# 3. Analyze layer importance
+# The function returns a dictionary {layer_index: importance_score}
+# where importance is 1 - cosine_similarity
+importance_scores = analyze_layer_importance(model, dataloader)
+
+# 4. Print the results, sorted by importance (less important first)
+sorted_layers = sorted(importance_scores.items(), key=lambda item: item[1])
+print("Layer importance scores (lower is less important):")
+for layer_idx, score in sorted_layers:
+    print(f"  Layer {layer_idx}: {score:.4f}")
+
+# The layers with the lowest scores are potential candidates for pruning.
+```
+
 
 ### Visualizing Bias with the Python API
 Generate visualizations to analyze how a model's activations differ when processing prompts with varying demographic attributes.
@@ -225,6 +264,12 @@ OptiPFair offers two powerful structured pruning strategies:
     * **Number**: `num_layers_to_remove=4`
     * **Percentage**: `depth_pruning_percentage=25`
     * **Specific Indices**: `layer_indices=[12, 13, 14, 15]`
+  
+### Understanding Model Internals: Layer Importance Analysis
+Before deciding which layers to remove with Depth Pruning, you can assess their relative importance. OptiPFair provides a method based on the cosine similarity between a layer's input and output embeddings.
+
+* **How it works**: The analyze_layer_importance function passes data through the model and uses hooks to capture the input and output of each transformer layer. It then calculates a score based on 1 - cosine_similarity.
+* **Interpretation**: A low score indicates that a layer alters its input representation minimally. These layers are strong candidates for removal via Depth Pruning, as their impact on the model's overall function may be less critical. This analysis provides data-driven insights to guide your pruning strategy.
 
 ---
 
@@ -235,7 +280,7 @@ The OptiPFair project is actively developed. Here's what's planned for the futur
 ### Future Roadmap
 Our goal is to make OptiPFair the go-to toolkit for efficient and fair model optimization. Key upcoming features include:
 
-* **Attention Pruning**: Implementing pruning methods for attention heads and layers. 
+* **Attention Pruning**: Implementing Attention Bypass and Adaptive Attention Bypass(AAB).
 * **Advanced Benchmarks**: Integrating more comprehensive performance and evaluation benchmarks.
 * **GPU Optimizations**: Creating a v2.0 with significant GPU-specific optimizations for faster execution. 
 * **Large-Scale Model Support**: Adding compatibility for DeepSpeed and FSDP to handle 70B+ models efficiently. 
