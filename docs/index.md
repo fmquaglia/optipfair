@@ -23,11 +23,12 @@ Understanding bias in language models is crucial for:
 
 - **GLU Architecture-Aware Pruning**: Maintains the paired nature of gate_proj and up_proj layers
 - **Depth Pruning**: Remove entire transformer layers for aggressive efficiency gains
+- **Layer Importance Analysis**: Analyze transformer layers using cosine similarity to inform pruning decisions
+- **Bias Visualization Tools**: Comprehensive analysis of how models process demographic attributes
+- **Quantitative Bias Metrics**: Numeric measurements for consistent evaluation
 - **Multiple Neuron Selection Methods**: MAW, VOW, and PON for different pruning strategies
 - **Flexible Pruning Targets**: Support for both pruning percentage and target expansion rate
 - **Layer Selection Methods**: Choose specific layers or use automatic selection strategies
-- **Bias Visualization Tools**: Comprehensive analysis of how models process demographic attributes
-- **Quantitative Bias Metrics**: Numeric measurements for consistent evaluation
 - **Simple API and CLI**: Easy to use interfaces for Python and command line
 - **Progress Tracking**: Visual progress bars and detailed statistics
 

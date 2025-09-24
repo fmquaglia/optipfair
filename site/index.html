@@ -720,7 +720,7 @@
 <h1 id="optipfair-documentation">OptiPFair Documentation<a class="headerlink" href="#optipfair-documentation" title="Permanent link">&para;</a></h1>
 <p>Welcome to the OptiPFair documentation. OptiPFair is a Python library for structured pruning of large language models, with a focus on GLU architectures and fairness analysis.</p>
 <h2 id="why-prune-language-models">Why Prune Language Models?<a class="headerlink" href="#why-prune-language-models" title="Permanent link">&para;</a></h2>
-<p>Pruning helps to reduce the size and computational requirements of large language models, making them:</p>
+<p>Pruning helps to reduce the size and computational requirements of LLMs, making them:</p>
 <ul>
 <li><strong>Faster</strong> for inference</li>
 <li><strong>More efficient</strong> in terms of memory usage</li>
@@ -737,10 +737,13 @@
 <h2 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>GLU Architecture-Aware Pruning</strong>: Maintains the paired nature of gate_proj and up_proj layers</li>
-<li><strong>Multiple Neuron Selection Methods</strong>: MAW, VOW, and PON for different pruning strategies</li>
-<li><strong>Flexible Pruning Targets</strong>: Support for both pruning percentage and target expansion rate</li>
+<li><strong>Depth Pruning</strong>: Remove entire transformer layers for aggressive efficiency gains</li>
+<li><strong>Layer Importance Analysis</strong>: Analyze transformer layers using cosine similarity to inform pruning decisions</li>
 <li><strong>Bias Visualization Tools</strong>: Comprehensive analysis of how models process demographic attributes</li>
 <li><strong>Quantitative Bias Metrics</strong>: Numeric measurements for consistent evaluation</li>
+<li><strong>Multiple Neuron Selection Methods</strong>: MAW, VOW, and PON for different pruning strategies</li>
+<li><strong>Flexible Pruning Targets</strong>: Support for both pruning percentage and target expansion rate</li>
+<li><strong>Layer Selection Methods</strong>: Choose specific layers or use automatic selection strategies</li>
 <li><strong>Simple API and CLI</strong>: Easy to use interfaces for Python and command line</li>
 <li><strong>Progress Tracking</strong>: Visual progress bars and detailed statistics</li>
 </ul>

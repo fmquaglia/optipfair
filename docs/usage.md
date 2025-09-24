@@ -1,4 +1,5 @@
 # Usage Guide
+This guide provides detailed instructions on how to use the core functionalities of OptiPFair, from pruning models to analyzing bias.
 
 ## Python API
 
@@ -267,4 +268,102 @@ comparison = compare_models_inference(
 
 print(f"Speedup: {comparison['speedup']:.2f}x")
 print(f"Tokens per second improvement: {comparison['tps_improvement_percent']:.2f}%")
+```
+
+## Layer Importance Analysis
+
+OptiPFair includes functionality to analyze the importance of transformer layers using cosine similarity. This helps identify which layers contribute most to the model's transformations, informing depth pruning decisions.
+
+### Basic Usage
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from torch.utils.data import DataLoader
+from optipfair import analyze_layer_importance
+
+# Load model and tokenizer
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-0.6B")
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-0.6B")
+
+# Prepare your dataset (user responsibility)
+# Example with a simple dataset
+from datasets import load_dataset
+dataset = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train[:100]')
+
+def tokenize_function(examples):
+    return tokenizer(
+        examples['text'],
+        truncation=True,
+        padding='max_length',
+        max_length=512,
+        return_tensors='pt'
+    )
+
+tokenized_dataset = dataset.map(tokenize_function, batched=True)
+dataloader = DataLoader(tokenized_dataset, batch_size=8)
+
+# Analyze layer importance
+importance_scores = analyze_layer_importance(model, dataloader)
+
+# Results: {0: 0.890395, 1: 0.307580, 2: 0.771541, ...}
+print(importance_scores)
+```
+
+### Advanced Usage
+
+```python
+# With manual architecture specification
+importance_scores = analyze_layer_importance(
+    model=model,
+    dataloader=dataloader,
+    layers_path='transformer.h',  # For GPT-2 style models
+    show_progress=True
+)
+
+# Analyze specific layers for depth pruning
+# Higher scores indicate layers that transform data more significantly
+# Lower scores indicate "passive" layers that could be candidates for removal
+sorted_layers = sorted(importance_scores.items(), key=lambda x: x[1], reverse=True)
+print("Most important layers:", sorted_layers[:3])
+print("Least important layers:", sorted_layers[-3:])
+```
+
+### Multi-Architecture Support
+
+The function automatically detects transformer layers for different architectures:
+
+- **LLaMA/Qwen/Mistral**: `model.layers`
+- **GPT-2/DistilGPT2**: `transformer.h`  
+- **T5**: `encoder.block` or `decoder.block`
+- **BERT**: `encoder.layer`
+
+If automatic detection fails, specify the path manually:
+
+```python
+# Manual specification for custom architectures
+importance_scores = analyze_layer_importance(
+    model=model,
+    dataloader=dataloader,
+    layers_path='model.custom_transformer_layers'
+)
+```
+
+### Integration with Depth Pruning
+
+Use importance scores to inform depth pruning decisions:
+
+```python
+# Analyze layer importance
+importance_scores = analyze_layer_importance(model, dataloader)
+
+# Identify least important layers
+sorted_layers = sorted(importance_scores.items(), key=lambda x: x[1])
+layers_to_remove = [layer_idx for layer_idx, score in sorted_layers[:4]]
+
+# Apply depth pruning to remove least important layers
+pruned_model = prune_model(
+    model=model,
+    pruning_type="DEPTH",
+    layer_indices=layers_to_remove
+)
 ```
