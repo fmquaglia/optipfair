@@ -494,6 +494,131 @@ print("\nOverall Metrics:")
 print(f"  Mean difference: {metrics['overall_metrics']['mean_difference']:.6f}")
 print(f"  Max difference: {metrics['overall_metrics']['max_difference']:.6f}")
 ```
+### Layer Importance Analysis
+
+OptiPFair includes functionality to analyze the importance of transformer layers using cosine similarity between layer inputs and outputs. This helps identify which layers contribute most to the model's transformations, informing depth pruning decisions by highlighting "passive" layers that could be candidates for removal.
+
+#### Basic Layer Analysis
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from torch.utils.data import DataLoader
+from optipfair import analyze_layer_importance
+
+# Load model and tokenizer
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-0.6B")
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-0.6B")
+
+# Prepare your dataset (user responsibility)
+from datasets import load_dataset
+dataset = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train[:100]')
+
+def tokenize_function(examples):
+    return tokenizer(
+        examples['text'],
+        truncation=True,
+        padding='max_length',
+        max_length=512,
+        return_tensors='pt'
+    )
+
+tokenized_dataset = dataset.map(tokenize_function, batched=True)
+dataloader = DataLoader(tokenized_dataset, batch_size=8)
+
+# Analyze layer importance
+importance_scores = analyze_layer_importance(model, dataloader)
+
+# Results: {0: 0.890395, 1: 0.307580, 2: 0.771541, ...}
+print(importance_scores)
+```
+
+#### Multi-Architecture Support
+
+The `analyze_layer_importance` function automatically detects transformer layers across different architectures:
+
+- **LLaMA/Qwen/Mistral**: `model.layers`
+- **GPT-2/DistilGPT2**: `transformer.h`  
+- **T5**: `encoder.block` or `decoder.block`
+- **BERT**: `encoder.layer`
+- **Custom architectures**: Manual specification via `layers_path`
+
+```python
+# Manual architecture specification
+importance_scores = analyze_layer_importance(
+    model=model,
+    dataloader=dataloader,
+    layers_path='transformer.h',  # For GPT-2 style models
+    show_progress=True
+)
+
+# Automatic detection works for most models
+importance_scores = analyze_layer_importance(
+    model=model,
+    dataloader=dataloader,
+    show_progress=False  # Disable progress bar
+)
+```
+
+#### Integration with Depth Pruning
+
+Use importance scores to make informed depth pruning decisions:
+
+```python
+# Step 1: Analyze layer importance
+importance_scores = analyze_layer_importance(model, dataloader)
+
+# Step 2: Identify least important layers
+sorted_layers = sorted(importance_scores.items(), key=lambda x: x[1])
+print("Least important layers:")
+for layer_idx, score in sorted_layers[:5]:
+    print(f"  Layer {layer_idx}: {score:.6f}")
+
+# Step 3: Apply depth pruning to remove least important layers
+layers_to_remove = [layer_idx for layer_idx, score in sorted_layers[:4]]
+pruned_model = prune_model(
+    model=model,
+    pruning_type="DEPTH",
+    layer_indices=layers_to_remove
+)
+
+print(f"Removed layers: {layers_to_remove}")
+```
+
+#### Understanding Importance Scores
+
+- **Higher scores** (closer to 1.0): Layers that significantly transform input representations
+- **Lower scores** (closer to 0.0): "Passive" layers that make minimal changes, good candidates for removal
+- **Typical patterns**: First and last layers usually have higher importance, middle layers vary by dataset complexity
+
+```python
+# Analyze score distribution
+import numpy as np
+
+scores = list(importance_scores.values())
+print(f"Mean importance: {np.mean(scores):.4f}")
+print(f"Std importance: {np.std(scores):.4f}")
+print(f"Min importance: {np.min(scores):.4f} (Layer {np.argmin(scores)})")
+print(f"Max importance: {np.max(scores):.4f} (Layer {np.argmax(scores)})")
+```
+
+#### Advanced Analysis Options
+
+```python
+# Compare importance across different datasets
+datasets = {
+    "wikitext": load_dataset('wikitext', 'wikitext-2-raw-v1', split='train[:100]'),
+    "sms_spam": load_dataset('sms_spam', split='train[:100]')
+}
+
+for dataset_name, dataset in datasets.items():
+    dataloader = prepare_dataloader(dataset)  # Your tokenization function
+    scores = analyze_layer_importance(model, dataloader)
+    
+    print(f"\n{dataset_name} - Top 3 most important layers:")
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    for layer_idx, score in sorted_scores[:3]:
+        print(f"  Layer {layer_idx}: {score:.6f}")
+```
 
 ## Evaluating Pruned Models
 
@@ -530,12 +655,14 @@ print(f"Tokens per second improvement: {comparison['tps_improvement_percent']:.2
 
 ## Common Usage Examples
 
-### Example 1: Combining Pruning and Bias Analysis
+### Example 1: Layer Analysis, Pruning, and Bias Analysis Pipeline
 
 ```python
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from optipfair import prune_model
+from torch.utils.data import DataLoader
+from datasets import load_dataset
+from optipfair import prune_model, analyze_layer_importance
 from optipfair.bias import visualize_bias
 
 # Load model and tokenizer
@@ -543,82 +670,75 @@ model_name = "meta-llama/Llama-3.2-1B"
 model = AutoModelForCausalLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-# Define prompt pairs for bias analysis
+# Prepare dataset for layer analysis
+dataset = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train[:200]')
+def tokenize_function(examples):
+    return tokenizer(examples['text'], truncation=True, padding='max_length', 
+                    max_length=512, return_tensors='pt')
+tokenized_dataset = dataset.map(tokenize_function, batched=True)
+dataloader = DataLoader(tokenized_dataset, batch_size=8)
+
+# Step 1: Analyze layer importance
+print("Analyzing layer importance...")
+importance_scores = analyze_layer_importance(model, dataloader)
+sorted_layers = sorted(importance_scores.items(), key=lambda x: x[1])
+print("Least important layers:", [f"Layer {idx}: {score:.4f}" for idx, score in sorted_layers[:4]])
+
+# Step 2: Define prompt pairs for bias analysis
 prompt_pairs = [
     ("The white student submitted their assignment. The professor thought it was",
      "The Asian student submitted their assignment. The professor thought it was")
 ]
 
-# Analyze bias in original model
-print("Analyzing bias in original model...")
+# Step 3: Analyze bias in original model
+print("\nAnalyzing bias in original model...")
 _, original_metrics = visualize_bias(
-    model, 
-    tokenizer,
-    prompt_pairs=prompt_pairs,
-    visualization_types=["mean_diff"],
-    output_dir="./bias_analysis/original"
+    model, tokenizer, prompt_pairs=prompt_pairs,
+    visualization_types=["mean_diff"], output_dir="./bias_analysis/original"
 )
 
-# Apply MLP GLU pruning
-print("\nApplying MLP GLU pruning...")
-pruned_model_mlp, stats_mlp = prune_model(
-    model=model,
-    pruning_type="MLP_GLU",
-    neuron_selection_method="MAW",
-    pruning_percentage=20,
-    show_progress=True,
-    return_stats=True
+# Step 4: Apply informed depth pruning based on layer analysis
+print("\nApplying depth pruning based on importance analysis...")
+layers_to_remove = [layer_idx for layer_idx, score in sorted_layers[:3]]  # Remove 3 least important
+pruned_model_informed, stats_informed = prune_model(
+    model=model, pruning_type="DEPTH", layer_indices=layers_to_remove,
+    show_progress=True, return_stats=True
 )
 
-print(f"MLP GLU Reduction: {stats_mlp['reduction']:,} parameters ({stats_mlp['percentage_reduction']:.2f}%)")
-
-# Apply depth pruning
-print("\nApplying depth pruning...")
-pruned_model_depth, stats_depth = prune_model(
-    model=model,
-    pruning_type="DEPTH",
-    num_layers_to_remove=3,
-    layer_selection_method="last",
-    show_progress=True,
-    return_stats=True
+# Step 5: Apply standard depth pruning for comparison
+print("\nApplying standard depth pruning...")
+pruned_model_standard, stats_standard = prune_model(
+    model=model, pruning_type="DEPTH", num_layers_to_remove=3,
+    layer_selection_method="last", show_progress=True, return_stats=True
 )
 
-print(f"Depth Reduction: {stats_depth['reduction']:,} parameters ({stats_depth['percentage_reduction']:.2f}%)")
+print(f"Informed pruning removed layers: {layers_to_remove}")
+print(f"Standard pruning removed layers: last 3 layers")
+print(f"Parameter reduction: {stats_informed['percentage_reduction']:.2f}%")
 
-# Analyze bias in both pruned models
-print("\nAnalyzing bias in MLP GLU pruned model...")
-_, pruned_metrics_mlp = visualize_bias(
-    pruned_model_mlp,
-    tokenizer,
-    prompt_pairs=prompt_pairs,
-    visualization_types=["mean_diff"],
-    output_dir="./bias_analysis/pruned_mlp"
+# Step 6: Analyze bias in both pruned models
+print("\nAnalyzing bias in informed pruned model...")
+_, informed_metrics = visualize_bias(
+    pruned_model_informed, tokenizer, prompt_pairs=prompt_pairs,
+    visualization_types=["mean_diff"], output_dir="./bias_analysis/informed"
 )
 
-print("\nAnalyzing bias in depth pruned model...")
-_, pruned_metrics_depth = visualize_bias(
-    pruned_model_depth,
-    tokenizer,
-    prompt_pairs=prompt_pairs,
-    visualization_types=["mean_diff"],
-    output_dir="./bias_analysis/pruned_depth"
+print("\nAnalyzing bias in standard pruned model...")
+_, standard_metrics = visualize_bias(
+    pruned_model_standard, tokenizer, prompt_pairs=prompt_pairs,
+    visualization_types=["mean_diff"], output_dir="./bias_analysis/standard"
 )
 
-# Compare bias metrics
-original_overall = original_metrics["pair_1"]["metrics"]["overall_metrics"]
-pruned_overall_mlp = pruned_metrics_mlp["pair_1"]["metrics"]["overall_metrics"]
-pruned_overall_depth = pruned_metrics_depth["pair_1"]["metrics"]["overall_metrics"]
+# Step 7: Compare results
+original_bias = original_metrics["pair_1"]["metrics"]["overall_metrics"]["mean_difference"]
+informed_bias = informed_metrics["pair_1"]["metrics"]["overall_metrics"]["mean_difference"]
+standard_bias = standard_metrics["pair_1"]["metrics"]["overall_metrics"]["mean_difference"]
 
-print("\nBias Comparison:")
-print(f"Original model mean difference: {original_overall['mean_difference']:.6f}")
-print(f"MLP GLU pruned model mean difference: {pruned_overall_mlp['mean_difference']:.6f}")
-print(f"Depth pruned model mean difference: {pruned_overall_depth['mean_difference']:.6f}")
-
-bias_change_mlp = (pruned_overall_mlp['mean_difference'] - original_overall['mean_difference']) / original_overall['mean_difference'] * 100
-bias_change_depth = (pruned_overall_depth['mean_difference'] - original_overall['mean_difference']) / original_overall['mean_difference'] * 100
-
-print(f"MLP GLU bias change: {bias_change_mlp:+.2f}%")
-print(f"Depth pruning bias change: {bias_change_depth:+.2f}%")
+print("\nResults Comparison:")
+print(f"Original model bias: {original_bias:.6f}")
+print(f"Informed pruning bias: {informed_bias:.6f} ({((informed_bias-original_bias)/original_bias*100):+.1f}%)")
+print(f"Standard pruning bias: {standard_bias:.6f} ({((standard_bias-original_bias)/original_bias*100):+.1f}%)")
+print(f"Informed vs Standard bias difference: {((informed_bias-standard_bias)/standard_bias*100):+.1f}%")
 ```
 
 ### Example 2: Detailed Mean Activations Analysis
