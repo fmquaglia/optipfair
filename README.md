@@ -61,7 +61,7 @@ optiPfair is more than just another pruning library. It's a toolkit designed for
 
 * **Go Beyond Numbers with Bias Visualization**: Don't just get a bias score. Our visualization tools (PCA, heatmaps, mean differences) help you *understand* how and where your model encodes bias, enabling more effective mitigation.
 
-* **🤖 AI-Assisted Development**: Accelerate your workflow using the included [`LLM Reference Manual`](https://github.com/peremartra/optiPfair/blob/main/optiPfair_llm_reference_manual.txt). Provide it to your favorite LLM (ChatGPT, Claude) to get expert-level help and generate integration code instantly.
+* **🤖 AI-Assisted Development**: Accelerate your workflow using the included [`LLM Reference Manual`](https://github.com/peremartra/optiPfair/blob/main/optipfair_llm_reference_manual.txt). Provide it to your favorite LLM (ChatGPT, Claude) to get expert-level help and generate integration code instantly.
 <p align="center">
       <img src="images/optiPfair_llmflow.gif" alt="AI Pair Programming with optiPfair" width="500"/>
 </p>
