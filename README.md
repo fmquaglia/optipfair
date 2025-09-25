@@ -44,7 +44,7 @@ Explore OptiPFair’s features with these interactive notebooks.
 | Tutorial | Description | Link |
 | :--- | :--- | :---: |
 | **Depth Pruning** | Learn how to remove entire transformer layers from models like Llama-3. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/depth_pruning.ipynb) |
-| **Layer Importance** | Identify which transformer layers contribute the least to your model. | [![Open In Colab](https://github.com/peremartra/optipfair/blob/main/examples/layer_importance_analysis.ipynb) |
+| **Layer Importance** | Identify which transformer layers contribute the least to your model. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/peremartra/optipfair/blob/main/examples/layer_importance_analysis.ipynb) |
 | **Pruning Compatibility** | Check if your model's architecture can be pruned by OptiPFair. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/pruning_compatibility_check.ipynb) |
 | **Bias Compatibility** | The coder's alternative to our live demo for bias analysis. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/bias_compatibility_check.ipynb) |
 
