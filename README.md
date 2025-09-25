@@ -1,69 +1,69 @@
-# optiPfair
+# optipfair
 
 <div align="center">
-  <img src="images/optiPfair.png" alt="optiPfair Logo" width="600"/>
+  <img src="images/optipfair.png" alt="optipfair Logo" width="600"/>
 </div>
 
 <div align="center">
-  <h1>optiPfair</h1>
+  <h1>optipfair</h1>
   <strong>The Python library for making LLMs both efficient (via pruning) and fair (via bias analysis).</strong>
 </div>
 
 <p align="center">
-  <a href="https://pypi.org/project/optiPfair/"><img alt="PyPI Version" src="https://img.shields.io/pypi/v/optiPfair?color=blue"></a>
-  <a href="https://pypi.org/project/optiPfair/"><img alt="Downloads" src="https://img.shields.io/pypi/dm/optiPfair?color=orange"></a>
-  <a href="https://github.com/peremartra/optiPfair/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/peremartra/optiPfair?color=green"></a>
-  <a href="https://github.com/peremartra/optiPfair/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/peremartra/optiPfair?style=social"></a>
+  <a href="https://pypi.org/project/optipfair/"><img alt="PyPI Version" src="https://img.shields.io/pypi/v/optipfair?color=blue"></a>
+  <a href="https://pypi.org/project/optipfair/"><img alt="Downloads" src="https://img.shields.io/pypi/dm/optipfair?color=orange"></a>
+  <a href="https://github.com/peremartra/optipfair/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/peremartra/optipfair?color=green"></a>
+  <a href="https://github.com/peremartra/optipfair/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/peremartra/optipfair?style=social"></a>
 </p>
 
 <div align="center">
     <h3>
-        <a href="https://peremartra.github.io/optiPfair/" target="_blank">Documentation</a>
+        <a href="https://peremartra.github.io/optipfair/" target="_blank">Documentation</a>
         ·
-        <a href="https://github.com/peremartra/optiPfair/issues" target="_blank">Report Bug</a>
+        <a href="https://github.com/peremartra/optipfair/issues" target="_blank">Report Bug</a>
         ·
-        <a href="https://github.com/peremartra/optiPfair/issues" target="_blank">Request Feature</a>
+        <a href="https://github.com/peremartra/optipfair/issues" target="_blank">Request Feature</a>
     </h3>
 </div>
 
 ---
-> **New to optiPfair?** Use our [LLM Reference Manual](optiPfair_llm_reference_manual.txt) - paste it into ChatGPT, Claude or your Favourite LLM for guided assistance with any optiPfair task.
-### 🚀 Interactive Demos: Try optiPfair NOW
+> **New to optipfair?** Use our [LLM Reference Manual](optipfair_llm_reference_manual.txt) - paste it into ChatGPT, Claude or your Favourite LLM for guided assistance with any optipfair task.
+### 🚀 Interactive Demos: Try optipfair NOW
 
-Experience optiPfair's capabilities directly in your browser.
+Experience optipfair's capabilities directly in your browser.
 
 | Live Bias Visualization Demo |
 | :--------------------------: |
 | Analyze any compatible model from Hugging Face with a full UI. No setup required. |
-| **[🚀 Launch the Live Demo on HF Spaces](https://huggingface.co/spaces/oopere/optiPfair-bias-analyzer)** |
+| **[🚀 Launch the Live Demo on HF Spaces](https://huggingface.co/spaces/oopere/optipfair-bias-analyzer)** |
 
 #### Tutorials on Google Colab
 
-Explore optiPfair’s features with these interactive notebooks.
+Explore optipfair’s features with these interactive notebooks.
 
 | Tutorial | Description | Link |
 | :--- | :--- | :---: |
-| **Depth Pruning** | Learn how to remove entire transformer layers from models like Llama-3. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optiPfair/blob/main/examples/depth_pruning.ipynb) |
-| **Layer Importance** | Identify which transformer layers contribute the least to your model. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/peremartra/optiPfair/blob/main/examples/layer_importance_analysis.ipynb) |
-| **Pruning Compatibility** | Check if your model's architecture can be pruned by optiPfair. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optiPfair/blob/main/examples/pruning_compatibility_check.ipynb) |
-| **Bias Compatibility** | The coder's alternative to our live demo for bias analysis. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optiPfair/blob/main/examples/bias_compatibility_check.ipynb) |
+| **Depth Pruning** | Learn how to remove entire transformer layers from models like Llama-3. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/depth_pruning.ipynb) |
+| **Layer Importance** | Identify which transformer layers contribute the least to your model. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/peremartra/optipfair/blob/main/examples/layer_importance_analysis.ipynb) |
+| **Pruning Compatibility** | Check if your model's architecture can be pruned by optipfair. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/pruning_compatibility_check.ipynb) |
+| **Bias Compatibility** | The coder's alternative to our live demo for bias analysis. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/peremartra/optipfair/blob/main/examples/bias_compatibility_check.ipynb) |
 
 ---
-### ✅ Why optiPfair?
+### ✅ Why optipfair?
 
-optiPfair is more than just another pruning library. It's a toolkit designed for the modern AI developer who cares about both performance and responsibility.
+optipfair is more than just another pruning library. It's a toolkit designed for the modern AI developer who cares about both performance and responsibility.
 
-* **Efficiency & Fairness in One Place**: Stop juggling tools. optiPfair is the only library designed to integrate structured pruning with powerful, intuitive bias visualization and analysis.
+* **Efficiency & Fairness in One Place**: Stop juggling tools. optipfair is the only library designed to integrate structured pruning with powerful, intuitive bias visualization and analysis.
 
-* **Dual Pruning Strategies**: optiPfair supports both **Width Pruning** (removing neurons from MLP layers) and **Depth Pruning** (removing entire transformer layers), giving you flexible control over the efficiency-performance trade-off.
+* **Dual Pruning Strategies**: optipfair supports both **Width Pruning** (removing neurons from MLP layers) and **Depth Pruning** (removing entire transformer layers), giving you flexible control over the efficiency-performance trade-off.
 
 * **Optimized for Modern Architectures**: We focus on what works now. The library is specialized for GLU-based models like LLaMA, Mistral, Gemma, and Qwen, ensuring relevant and effective pruning.
 
 * **Go Beyond Numbers with Bias Visualization**: Don't just get a bias score. Our visualization tools (PCA, heatmaps, mean differences) help you *understand* how and where your model encodes bias, enabling more effective mitigation.
 
-* **🤖 AI-Assisted Development**: Accelerate your workflow using the included [`LLM Reference Manual`](https://github.com/peremartra/optiPfair/blob/main/optipfair_llm_reference_manual.txt). Provide it to your favorite LLM (ChatGPT, Claude) to get expert-level help and generate integration code instantly.
+* **🤖 AI-Assisted Development**: Accelerate your workflow using the included [`LLM Reference Manual`](https://github.com/peremartra/optipfair/blob/main/optipfair_llm_reference_manual.txt). Provide it to your favorite LLM (ChatGPT, Claude) to get expert-level help and generate integration code instantly.
 <p align="center">
-      <img src="images/optiPfair_llmflow.gif" alt="AI Pair Programming with optiPfair" width="500"/>
+      <img src="images/optipfair_llmflow.gif" alt="AI Pair Programming with optipfair" width="500"/>
 </p>
 
 * **🔬 Backed by Research**: Our methods aren't arbitrary. They are built upon and validated by ongoing applied research in model optimization and fairness analysis.
@@ -74,26 +74,26 @@ Choose the installation method that best suits your needs. For bias visualizatio
 **Standard Installation**
 For core pruning functionality:
 ```python
-pip install optiPfair
+pip install optipfair
 ```
 
 **Full Installation (with Bias Visualization)**
 To use the bias analysis and visualization tools, install with the [viz] extra dependencies:
 ```python
-pip install "optiPfair[viz]"
+pip install "optipfair[viz]"
 ```
 
 **Developer Installation**
 To install from the source for contributing or development:
 ```bash
-git clone https://github.com/peremartra/optiPfair.git
-cd optiPfair
+git clone https://github.com/peremartra/optipfair.git
+cd optipfair
 pip install -e .
 ```
 ---
 ## ⚡ Quick Start
 
-See how to use optiPfair's core features in just a few lines of code.
+See how to use optipfair's core features in just a few lines of code.
 
 ### Pruning with the Python API
 
@@ -101,7 +101,7 @@ Prune 20% of the MLP neurons from a model using the Maximum Absolute Weight (MAW
 
 ```python
 from transformers import AutoModelForCausalLM
-from optiPfair import prune_model
+from optipfair import prune_model
 
 # Load a pre-trained model
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B")
@@ -140,7 +140,7 @@ Remove entire layers from a model for significant efficiency gains. Here, we rem
 
 ```python
 from transformers import AutoModelForCausalLM
-from optiPfair import prune_model
+from optipfair import prune_model
 
 # Load a pre-trained model
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B")
@@ -171,7 +171,7 @@ Before performing Depth Pruning, you can analyze which layers are the most redun
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from torch.utils.data import DataLoader, TensorDataset
 import torch
-from optiPfair import analyze_layer_importance
+from optipfair import analyze_layer_importance
 
 # 1. Load a model and tokenizer
 model_name = "distilgpt2"
@@ -206,7 +206,7 @@ Generate visualizations to analyze how a model's activations differ when process
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from optiPfair.bias import visualize_bias
+from optipfair.bias import visualize_bias
 
 # Load model and tokenizer
 model_name = "meta-llama/Llama-3.2-1B"
@@ -240,10 +240,10 @@ The code above generates the following types of visualizations, allowing for a d
 ---
 ## Dive Deeper: Features & Concepts
 
-For those who want to understand the nuts and bolts of optiPfair.
+For those who want to understand the nuts and bolts of optipfair.
 
 ### Supported Models
-optiPfair is designed to work with transformer-based language models that use GLU architecture in their MLP layers. This includes most modern LLMs:
+optipfair is designed to work with transformer-based language models that use GLU architecture in their MLP layers. This includes most modern LLMs:
 
 * **LLaMA family** (LLaMA, LLaMA-2, LLaMA-3)
 * **Mistral** models
@@ -253,7 +253,7 @@ optiPfair is designed to work with transformer-based language models that use GL
 
 ### Pruning Strategies: Neurons vs. Layers
 
-optiPfair offers two powerful structured pruning strategies:
+optipfair offers two powerful structured pruning strategies:
 
 1.  **MLP Pruning (Width Pruning)**: Reduces the number of neurons within the MLP layers of GLU-based models. This is a fine-grained approach to improve efficiency. You can control it via `pruning_percentage` or a target `expansion_rate`. It uses several neuron importance metrics:
     * **MAW (Maximum Absolute Weight)**: Default and most effective method.
@@ -266,7 +266,7 @@ optiPfair offers two powerful structured pruning strategies:
     * **Specific Indices**: `layer_indices=[12, 13, 14, 15]`
   
 ### Understanding Model Internals: Layer Importance Analysis
-Before deciding which layers to remove with Depth Pruning, you can assess their relative importance. optiPfair provides a method based on the cosine similarity between a layer's input and output embeddings.
+Before deciding which layers to remove with Depth Pruning, you can assess their relative importance. optipfair provides a method based on the cosine similarity between a layer's input and output embeddings.
 
 * **How it works**: The analyze_layer_importance function passes data through the model and uses hooks to capture the input and output of each transformer layer. It then calculates a score based on 1 - cosine_similarity.
 * **Interpretation**: A low score indicates that a layer alters its input representation minimally. These layers are strong candidates for removal via Depth Pruning, as their impact on the model's overall function may be less critical. This analysis provides data-driven insights to guide your pruning strategy.
@@ -275,10 +275,10 @@ Before deciding which layers to remove with Depth Pruning, you can assess their 
 
 ## 🗺️ Roadmap & Community
 
-The optiPfair project is actively developed. Here's what's planned for the future.
+The optipfair project is actively developed. Here's what's planned for the future.
 
 ### Future Roadmap
-Our goal is to make optiPfair the go-to toolkit for efficient and fair model optimization. Key upcoming features include:
+Our goal is to make optipfair the go-to toolkit for efficient and fair model optimization. Key upcoming features include:
 
 * **Attention Pruning**: Implementing Attention Bypass and Adaptive Attention Bypass(AAB).
 * **Advanced Benchmarks**: Integrating more comprehensive performance and evaluation benchmarks.
@@ -289,14 +289,14 @@ Our goal is to make optiPfair the go-to toolkit for efficient and fair model opt
 Contributions are welcome! Whether it's bug reports, feature requests, or code contributions, please check out our [contributing guidelines](CONTRIBUTING.md) to get started.
 
 ### Citation
-If you use optiPfair in your research or projects, please cite the library:
+If you use optipfair in your research or projects, please cite the library:
 
 ```bibtex
-@software{optiPfair,
+@software{optipfair,
   author = {Pere Martra},
-  title = {optiPfair: A Library for Structured Pruning and Bias Visualization of Large Language Models},
+  title = {optipfair: A Library for Structured Pruning and Bias Visualization of Large Language Models},
   year = {2024},
-  url = {https://github.com/peremartra/optiPfair}
+  url = {https://github.com/peremartra/optipfair}
 }
 ```
 ### License
