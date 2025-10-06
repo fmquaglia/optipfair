@@ -1,7 +1,7 @@
 # optipfair
 
 <div align="center">
-  <img src="images/optipfair.png" alt="optiPfair Logo" width="600"/>
+  <img src="images/optiPfair.png" alt="optiPfair Logo" width="600"/>
 </div>
 
 <div align="center">
